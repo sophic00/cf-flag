@@ -1,14 +1,12 @@
 package flagapi
 
 type createUserRequest struct {
-	ID      string `json:"id"`
 	Name    string `json:"name"`
 	Email   string `json:"email"`
 	Country string `json:"country"`
 }
 
 type createFlagRequest struct {
-	ID         string  `json:"id"`
 	Name       string  `json:"name"`
 	Country    *string `json:"country,omitempty"`
 	Percentage *int    `json:"percentage,omitempty"`

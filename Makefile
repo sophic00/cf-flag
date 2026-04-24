@@ -1,0 +1,26 @@
+.PHONY: build dev deploy test wasm-build db-init db-init-remote clean
+
+build:
+	go run github.com/syumai/workers/cmd/workers-assets-gen -mode=go
+	GOOS=js GOARCH=wasm go build -o ./build/app.wasm .
+
+wasm-build:
+	GOOS=js GOARCH=wasm go build -o ./build/app.wasm .
+
+dev:
+	wrangler dev
+
+deploy:
+	wrangler deploy
+
+test:
+	go test ./...
+
+db-init:
+	wrangler d1 execute cf-flag --file=./schema.sql
+
+db-init-remote:
+	wrangler d1 execute cf-flag --remote --file=./schema.sql
+
+clean:
+	rm -rf ./build

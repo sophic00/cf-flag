@@ -8,46 +8,52 @@ import (
 )
 
 var countryCodePattern = regexp.MustCompile(`^[A-Z]{2}$`)
+var errIDGeneration = errors.New("id generation failed")
 
 func normalizeUserInput(in createUserRequest) (UserRecord, error) {
-	user := UserRecord{
-		ID:      strings.TrimSpace(in.ID),
-		Name:    strings.TrimSpace(in.Name),
-		Email:   strings.ToLower(strings.TrimSpace(in.Email)),
-		Country: strings.ToUpper(strings.TrimSpace(in.Country)),
-	}
+	name := strings.TrimSpace(in.Name)
+	email := strings.ToLower(strings.TrimSpace(in.Email))
+	country := strings.ToUpper(strings.TrimSpace(in.Country))
 
-	if user.ID == "" {
-		return UserRecord{}, errors.New("id is required")
-	}
-	if user.Name == "" {
+	if name == "" {
 		return UserRecord{}, errors.New("name is required")
 	}
-	if user.Email == "" {
+	if email == "" {
 		return UserRecord{}, errors.New("email is required")
 	}
-	if !strings.Contains(user.Email, "@") {
+	if !strings.Contains(email, "@") {
 		return UserRecord{}, errors.New("email is invalid")
 	}
-	if !isCountryCode(user.Country) {
+	if !isCountryCode(country) {
 		return UserRecord{}, errors.New("country must be an ISO-2 code")
 	}
 
-	return user, nil
+	id, err := newUserID()
+	if err != nil {
+		return UserRecord{}, fmt.Errorf("%w: %v", errIDGeneration, err)
+	}
+
+	return UserRecord{
+		ID:      id,
+		Name:    name,
+		Email:   email,
+		Country: country,
+	}, nil
 }
 
 func normalizeFlagInput(in createFlagRequest) (FlagRecord, error) {
-	flag := FlagRecord{
-		ID:   strings.TrimSpace(in.ID),
-		Name: strings.TrimSpace(in.Name),
-	}
+	name := strings.TrimSpace(in.Name)
 
-	if flag.ID == "" {
-		return FlagRecord{}, errors.New("id is required")
-	}
-	if flag.Name == "" {
+	if name == "" {
 		return FlagRecord{}, errors.New("name is required")
 	}
+
+	id, err := newFlagID()
+	if err != nil {
+		return FlagRecord{}, fmt.Errorf("%w: %v", errIDGeneration, err)
+	}
+
+	flag := FlagRecord{ID: id, Name: name}
 
 	if (in.Country == nil) == (in.Percentage == nil) {
 		return FlagRecord{}, errors.New("exactly one of country or percentage is required")

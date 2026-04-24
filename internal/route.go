@@ -27,6 +27,10 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, req *http.Request) {
 
 	user, err := normalizeUserInput(in)
 	if err != nil {
+		if errors.Is(err, errIDGeneration) {
+			writeError(w, http.StatusInternalServerError, "failed to generate user id")
+			return
+		}
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -34,7 +38,7 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, req *http.Request) {
 	err = s.insertUser(req.Context(), user)
 	if err != nil {
 		if isUniqueConstraintError(err) {
-			writeError(w, http.StatusConflict, "user id or email already exists")
+			writeError(w, http.StatusConflict, "user already exists")
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "failed to create user")
@@ -53,6 +57,10 @@ func (s *Server) handleCreateFlag(w http.ResponseWriter, req *http.Request) {
 
 	flag, err := normalizeFlagInput(in)
 	if err != nil {
+		if errors.Is(err, errIDGeneration) {
+			writeError(w, http.StatusInternalServerError, "failed to generate flag id")
+			return
+		}
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -60,7 +68,7 @@ func (s *Server) handleCreateFlag(w http.ResponseWriter, req *http.Request) {
 	err = s.insertFlag(req.Context(), flag)
 	if err != nil {
 		if isUniqueConstraintError(err) {
-			writeError(w, http.StatusConflict, "flag id already exists")
+			writeError(w, http.StatusConflict, "flag already exists")
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "failed to create flag")

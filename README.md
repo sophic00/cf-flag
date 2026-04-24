@@ -4,8 +4,8 @@ Minimal feature-flag backend in Go on Cloudflare Workers.
 
 ## What it supports
 
-- Create user (`id`, `name`, `email`, `country`).
-- Create flag (`id`, `name`, rule as country or percentage).
+- Create user (`name`, `email`, `country`) with backend-generated `id`.
+- Create flag (`name`, rule as country or percentage) with backend-generated `id`.
 - Check if flag is active for a user.
 
 Rules are stored as:
@@ -14,6 +14,8 @@ Rules are stored as:
 - `pct:25`
 
 For percentage rules, activation is deterministic using `HMAC-SHA256(FLAG_HASH_KEY, flagID + ":" + userID)`.
+
+User and flag IDs are generated as UUIDv7 (`usr_<uuidv7>`, `flg_<uuidv7>`), which are stable and distribute well for percentage hashing.
 
 ## Endpoints
 
@@ -27,7 +29,6 @@ For percentage rules, activation is deterministic using `HMAC-SHA256(FLAG_HASH_K
 ```json
 POST /users
 {
-  "id": "user-1",
   "name": "Vaibhav",
   "email": "vaibhav@example.com",
   "country": "IN"
@@ -39,7 +40,6 @@ POST /users
 ```json
 POST /flags
 {
-  "id": "flag-country-in",
   "name": "India users",
   "country": "IN"
 }
@@ -50,7 +50,6 @@ POST /flags
 ```json
 POST /flags
 {
-  "id": "flag-rollout-25",
   "name": "Rollout 25",
   "percentage": 25
 }
@@ -59,15 +58,15 @@ POST /flags
 ### Check active
 
 ```text
-GET /flags/flag-rollout-25/users/user-1/active
+GET /flags/flg_<generated-id>/users/usr_<generated-id>/active
 ```
 
 Response:
 
 ```json
 {
-  "flagId": "flag-rollout-25",
-  "userId": "user-1",
+  "flagId": "flg_01969587-83da-72a6-b8ef-f6f8ef986355",
+  "userId": "usr_01969587-8428-7738-9ec1-cd0df1278d5e",
   "rule": "pct:25",
   "active": true
 }
@@ -82,6 +81,12 @@ npm install
 go mod tidy
 ```
 
+Or using Make:
+
+```bash
+make test
+```
+
 2. Create D1 DB:
 
 ```bash
@@ -93,19 +98,19 @@ wrangler d1 create cf-flag
 4. Init local DB schema:
 
 ```bash
-npm run db:init
+make db-init
 ```
 
 5. Run locally:
 
 ```bash
-npm start
+make dev
 ```
 
 6. Deploy:
 
 ```bash
-npm run deploy
+make deploy
 ```
 
 ## Secret key

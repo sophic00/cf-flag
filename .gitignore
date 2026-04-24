@@ -1,4 +1,3 @@
 build/
 node_modules/
 .wrangler/
-cf-flag.git

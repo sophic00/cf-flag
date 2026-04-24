@@ -2,6 +2,7 @@ package flagapi
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -66,4 +67,30 @@ func TestPercentageEnabledMonotonic(t *testing.T) {
 
 func userIDForTest(i int) string {
 	return fmt.Sprintf("user-%d", i)
+}
+
+func TestNewUserIDPrefixAndFormat(t *testing.T) {
+	id, err := newUserID()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.HasPrefix(id, "usr_") {
+		t.Fatalf("unexpected prefix: %s", id)
+	}
+	if len(id) <= len("usr_") {
+		t.Fatalf("id too short: %s", id)
+	}
+}
+
+func TestNewFlagIDPrefixAndFormat(t *testing.T) {
+	id, err := newFlagID()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.HasPrefix(id, "flg_") {
+		t.Fatalf("unexpected prefix: %s", id)
+	}
+	if len(id) <= len("flg_") {
+		t.Fatalf("id too short: %s", id)
+	}
 }
