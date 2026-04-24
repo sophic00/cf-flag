@@ -13,8 +13,12 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
     permissions:
       contents: read
+      deployments: write
 
     steps:
       - name: Check out repository

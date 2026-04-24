@@ -191,10 +191,16 @@ Changing this secret reshuffles percentage cohorts.
 
 `.github/workflows/deploy-prod.yml` deploys automatically when code is pushed to the `prod` branch.
 
+The workflow deploys to the GitHub `production` environment, so deployments show up in GitHub's Deployments/Environments UI.
+
 Set these GitHub repository secrets before relying on the workflow:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
+
+Set this GitHub repository variable if you want the environment to show the live Worker URL:
+
+- `PRODUCTION_URL`
 
 The Worker secret `FLAG_HASH_KEY` is not managed by GitHub Actions. Set it once in Cloudflare with:
 

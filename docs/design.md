@@ -180,11 +180,3 @@ make db-clean-remote
 5. `make db-init-remote`
 6. `npx wrangler secret put FLAG_HASH_KEY`
 7. `make deploy`
-
-## Tradeoffs
-
-- The active-check route currently works by `flagID` and `userID`, not by `flag name`.
-- There is no per-user assignment persistence, so percentage rollouts are approximate rather than exact-count based.
-- Email validation is practical and regex-based, not full RFC validation.
-
-These tradeoffs keep the system small and suitable for the current requirements.
