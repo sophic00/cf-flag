@@ -74,6 +74,55 @@ This provides:
 - no stored assignment table
 - approximately uniform spread for percentage flags
 
+### Percentage Mapping Alternatives
+
+The current implementation is intentionally stateless. It maps a user to a percentage flag by hashing only:
+
+- `flagID`
+- `userID`
+- `FLAG_HASH_KEY`
+
+This is simple and fast, but it gives an approximately correct percentage, not an exact percentage of the current user population.
+
+Other options:
+
+#### Deterministic Ranking Across All Users
+
+For each user, compute a deterministic score from `flagID` and `userID`, sort all users by score, and activate the top `ceil(N% * total_users)`.
+
+Pros:
+
+- exact percentage over the current user set
+- deterministic selection
+
+Cons:
+
+- requires access to the full user population
+- expensive to compute on demand
+- adding users can shift the cutoff and change who is active
+
+#### Stored Explicit Assignments
+
+At percentage-flag creation time, compute the selected users once and store explicit `flag -> user` assignments.
+
+Pros:
+
+- exact percentage
+- fast status checks
+- stable assignments over time
+
+Cons:
+
+- requires a mapping table
+- adds write-time complexity
+- needs a policy for newly created users
+
+### Design Choice
+
+This service uses stateless HMAC bucketing because the goal is to keep the backend minimal and avoid a `flag_user` mapping table.
+
+If future requirements need exact percentage rollouts instead of approximate rollouts, the preferred upgrade path is stored explicit assignments.
+
 ## ID Strategy
 
 User IDs and flag IDs are generated on the backend using UUIDv7 and prefixed for readability:
