@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cf-flag",
+  "main": "./build/worker.mjs",
+  "compatibility_date": "2026-04-24",
+  "build": {
+    "command": "npm run build"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cf-flag",
+      "database_id": "5803325d-cafb-409a-bc31-b209d5c8cc71"
+    }
+  ],
+  "vars": {
+    "FLAG_HASH_KEY": "dev-only-secret"
+  }
+}
