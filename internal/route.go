@@ -8,6 +8,7 @@ import (
 )
 
 func (s *Server) RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("GET /", s.handleHealth)
 	mux.HandleFunc("GET /healthz", s.handleHealth)
 	mux.HandleFunc("POST /createuser", s.handleCreateUser)
 	mux.HandleFunc("POST /createflag", s.handleCreateFlag)
