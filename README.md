@@ -113,6 +113,14 @@ Or using Make:
 make test
 ```
 
+Smoke test against a running local or deployed Worker:
+
+```bash
+BASE_URL=http://127.0.0.1:8787 TOTAL_USERS=200 make smoke-test
+```
+
+The script creates a few hundred users, creates one country flag and one percentage flag, verifies `/listflag`, checks all country matches, and verifies the percentage rollout stays within a reasonable range.
+
 2. Create D1 DB:
 
 ```bash

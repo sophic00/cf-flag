@@ -16,6 +16,9 @@ deploy:
 test:
 	go test ./...
 
+smoke-test:
+	./scripts/test_rules.sh
+
 db-init:
 	npx wrangler d1 execute cf-flag --file=./schema.sql
 
