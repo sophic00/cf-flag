@@ -186,3 +186,18 @@ wrangler secret put FLAG_HASH_KEY
 ```
 
 Changing this secret reshuffles percentage cohorts.
+
+## GitHub Actions Deploy
+
+`.github/workflows/deploy-prod.yml` deploys automatically when code is pushed to the `prod` branch.
+
+Set these GitHub repository secrets before relying on the workflow:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+The Worker secret `FLAG_HASH_KEY` is not managed by GitHub Actions. Set it once in Cloudflare with:
+
+```bash
+npx wrangler secret put FLAG_HASH_KEY
+```
