@@ -8,19 +8,19 @@ wasm-build:
 	GOOS=js GOARCH=wasm go build -o ./build/app.wasm .
 
 dev:
-	wrangler dev
+	npx wrangler dev
 
 deploy:
-	wrangler deploy
+	npx wrangler deploy
 
 test:
 	go test ./...
 
 db-init:
-	wrangler d1 execute cf-flag --file=./schema.sql
+	npx wrangler d1 execute cf-flag --file=./schema.sql
 
 db-init-remote:
-	wrangler d1 execute cf-flag --remote --file=./schema.sql
+	npx wrangler d1 execute cf-flag --remote --file=./schema.sql
 
 clean:
 	rm -rf ./build

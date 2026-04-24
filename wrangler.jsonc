@@ -12,8 +12,5 @@
       "database_name": "cf-flag",
       "database_id": "5803325d-cafb-409a-bc31-b209d5c8cc71"
     }
-  ],
-  "vars": {
-    "FLAG_HASH_KEY": "dev-only-secret"
-  }
+  ]
 }

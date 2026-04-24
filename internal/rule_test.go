@@ -55,7 +55,7 @@ func TestPercentageEnabledDeterministic(t *testing.T) {
 
 func TestPercentageEnabledMonotonic(t *testing.T) {
 	key := []byte("test-key")
-	for i := 0; i < 500; i++ {
+	for i := range 500 {
 		userID := userIDForTest(i)
 		at25 := PercentageEnabled("flag-x", userID, 25, key)
 		at30 := PercentageEnabled("flag-x", userID, 30, key)
