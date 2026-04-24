@@ -21,6 +21,7 @@ User and flag IDs are generated as UUIDv7 (`usr_<uuidv7>`, `flg_<uuidv7>`), whic
 
 - `POST /users`
 - `POST /flags`
+- `GET /flags`
 - `GET /flags/{flagID}/users/{userID}/active`
 - `GET /healthz`
 
@@ -69,6 +70,31 @@ Response:
   "userId": "usr_01969587-8428-7738-9ec1-cd0df1278d5e",
   "rule": "pct:25",
   "active": true
+}
+```
+
+### List all flags
+
+```text
+GET /flags
+```
+
+Response:
+
+```json
+{
+  "flags": [
+    {
+      "id": "flg_01969587-83da-72a6-b8ef-f6f8ef986355",
+      "name": "Rollout 25",
+      "rule": "pct:25"
+    },
+    {
+      "id": "flg_01969588-a71c-7fcb-b2fe-cf6028dc1f4e",
+      "name": "India users",
+      "rule": "country:IN"
+    }
+  ]
 }
 ```
 

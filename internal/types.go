@@ -20,6 +20,10 @@ type createFlagResponse struct {
 	Flag FlagRecord `json:"flag"`
 }
 
+type listFlagsResponse struct {
+	Flags []FlagRecord `json:"flags"`
+}
+
 type flagStatusResponse struct {
 	FlagID string `json:"flagId"`
 	UserID string `json:"userId"`

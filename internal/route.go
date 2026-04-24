@@ -11,6 +11,7 @@ func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /healthz", s.handleHealth)
 	mux.HandleFunc("POST /users", s.handleCreateUser)
 	mux.HandleFunc("POST /flags", s.handleCreateFlag)
+	mux.HandleFunc("GET /flags", s.handleListFlags)
 	mux.HandleFunc("GET /flags/{flagID}/users/{userID}/active", s.handleFlagActive)
 }
 
@@ -76,6 +77,16 @@ func (s *Server) handleCreateFlag(w http.ResponseWriter, req *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, createFlagResponse{Flag: flag})
+}
+
+func (s *Server) handleListFlags(w http.ResponseWriter, req *http.Request) {
+	flags, err := s.listFlags(req.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to list flags")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, listFlagsResponse{Flags: flags})
 }
 
 func (s *Server) handleFlagActive(w http.ResponseWriter, req *http.Request) {
