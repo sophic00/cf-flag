@@ -2,6 +2,8 @@
 
 Minimal feature-flag backend in Go on Cloudflare Workers.
 
+Design details are documented in `docs/design.md`.
+
 ## What it supports
 
 - Create user (`name`, `email`, `country`) with backend-generated `id`.
@@ -124,7 +126,15 @@ The script creates a few hundred users, creates one country flag and one percent
 2. Create D1 DB:
 
 ```bash
-wrangler d1 create cf-flag
+make db-create
+```
+
+This creates the live Cloudflare D1 database. Wrangler prints the new `database_id`; copy that value into `wrangler.jsonc` under `d1_databases[0].database_id`.
+
+If you want a different database name:
+
+```bash
+DB_NAME=my-live-db make db-create
 ```
 
 3. Put returned `database_id` into `wrangler.jsonc`.
@@ -133,6 +143,12 @@ wrangler d1 create cf-flag
 
 ```bash
 make db-init
+```
+
+To wipe all data from the local DB while keeping the schema:
+
+```bash
+make db-clean
 ```
 
 5. Run locally:
@@ -145,6 +161,18 @@ make dev
 
 ```bash
 make deploy
+```
+
+For the remote database schema, run:
+
+```bash
+make db-init-remote
+```
+
+To wipe all data from the live database while keeping the schema:
+
+```bash
+make db-clean-remote
 ```
 
 ## Secret key

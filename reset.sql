@@ -1,0 +1,2 @@
+DELETE FROM flags;
+DELETE FROM users;
