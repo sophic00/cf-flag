@@ -56,25 +56,40 @@ func normalizeFlagInput(in createFlagRequest) (FlagRecord, error) {
 
 	flag := FlagRecord{ID: id, Name: name}
 
-	if (in.Country == nil) == (in.Percentage == nil) {
-		return FlagRecord{}, errors.New("exactly one of country or percentage is required")
+	if in.Country == nil && in.Percentage == nil {
+		return FlagRecord{}, errors.New("at least one of country or percentage is required")
 	}
 
-	if in.Country != nil {
+	hasCountry := in.Country != nil
+	hasPercentage := in.Percentage != nil
+
+	if hasCountry {
 		country := strings.ToUpper(strings.TrimSpace(*in.Country))
 		if !isCountryCode(country) {
 			return FlagRecord{}, errors.New("country must be an ISO-2 code")
 		}
+		if hasPercentage {
+			pct := *in.Percentage
+			if pct < 0 || pct > 100 {
+				return FlagRecord{}, errors.New("percentage must be in range 0..100")
+			}
+			flag.Rule = fmt.Sprintf("country_pct:%s:%d", country, pct)
+			return flag, nil
+		}
 		flag.Rule = "country:" + country
-	} else {
+		return flag, nil
+	}
+
+	if hasPercentage {
 		pct := *in.Percentage
 		if pct < 0 || pct > 100 {
 			return FlagRecord{}, errors.New("percentage must be in range 0..100")
 		}
 		flag.Rule = fmt.Sprintf("pct:%d", pct)
+		return flag, nil
 	}
 
-	return flag, nil
+	return FlagRecord{}, errors.New("invalid rule payload")
 }
 
 func isCountryCode(v string) bool {

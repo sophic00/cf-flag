@@ -15,6 +15,32 @@ func ParseFlagRule(raw string) (FlagRule, error) {
 		return FlagRule{}, errors.New("rule is empty")
 	}
 
+	if after, ok := strings.CutPrefix(raw, "country_pct:"); ok {
+		parts := strings.Split(after, ":")
+		if len(parts) != 2 {
+			return FlagRule{}, errors.New("invalid country percentage rule")
+		}
+
+		country := strings.ToUpper(strings.TrimSpace(parts[0]))
+		if !isCountryCode(country) {
+			return FlagRule{}, errors.New("invalid country percentage rule")
+		}
+
+		pct, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+		if err != nil {
+			return FlagRule{}, errors.New("invalid country percentage rule")
+		}
+		if pct < 0 || pct > 100 {
+			return FlagRule{}, errors.New("invalid country percentage rule")
+		}
+
+		return FlagRule{
+			TypeName:   RuleTypeCountryPercentage,
+			Country:    country,
+			Percentage: pct,
+		}, nil
+	}
+
 	if after, ok := strings.CutPrefix(raw, "country:"); ok {
 		country := strings.ToUpper(strings.TrimSpace(after))
 		if !isCountryCode(country) {

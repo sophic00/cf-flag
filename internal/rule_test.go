@@ -32,6 +32,22 @@ func TestParseFlagRulePercentage(t *testing.T) {
 	}
 }
 
+func TestParseFlagRuleCountryPercentage(t *testing.T) {
+	rule, err := ParseFlagRule("country_pct:in:25")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if rule.TypeName != RuleTypeCountryPercentage {
+		t.Fatalf("unexpected type: %s", rule.TypeName)
+	}
+	if rule.Country != "IN" {
+		t.Fatalf("unexpected country: %s", rule.Country)
+	}
+	if rule.Percentage != 25 {
+		t.Fatalf("unexpected percentage: %d", rule.Percentage)
+	}
+}
+
 func TestPercentageEnabledBoundaries(t *testing.T) {
 	key := []byte("test-key")
 	if PercentageEnabled("flag-1", "user-1", 0, key) {

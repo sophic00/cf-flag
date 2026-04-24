@@ -51,8 +51,9 @@ type FlagRecord struct {
 type RuleType string
 
 const (
-	RuleTypeCountry    RuleType = "country"
-	RuleTypePercentage RuleType = "percentage"
+	RuleTypeCountry           RuleType = "country"
+	RuleTypePercentage        RuleType = "percentage"
+	RuleTypeCountryPercentage RuleType = "country_percentage"
 )
 
 type FlagRule struct {

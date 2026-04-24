@@ -131,6 +131,9 @@ func (s *Server) handleFlagActive(w http.ResponseWriter, req *http.Request) {
 		active = strings.EqualFold(userCountry, rule.Country)
 	case RuleTypePercentage:
 		active = PercentageEnabled(flagID, userID, rule.Percentage, s.hashKey)
+	case RuleTypeCountryPercentage:
+		active = strings.EqualFold(userCountry, rule.Country) &&
+			PercentageEnabled(flagID, userID, rule.Percentage, s.hashKey)
 	default:
 		writeError(w, http.StatusInternalServerError, "unsupported rule type")
 		return
