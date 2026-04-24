@@ -19,16 +19,16 @@ User and flag IDs are generated as UUIDv7 (`usr_<uuidv7>`, `flg_<uuidv7>`), whic
 
 ## Endpoints
 
-- `POST /users`
-- `POST /flags`
-- `GET /flags`
+- `POST /createuser`
+- `POST /createflag`
+- `GET /listflag`
 - `GET /flags/{flagID}/users/{userID}/active`
 - `GET /healthz`
 
 ### Create user
 
 ```json
-POST /users
+POST /createuser
 {
   "name": "Vaibhav",
   "email": "vaibhav@example.com",
@@ -39,7 +39,7 @@ POST /users
 ### Create country flag
 
 ```json
-POST /flags
+POST /createflag
 {
   "name": "India users",
   "country": "IN"
@@ -49,7 +49,7 @@ POST /flags
 ### Create percentage flag
 
 ```json
-POST /flags
+POST /createflag
 {
   "name": "Rollout 25",
   "percentage": 25
@@ -76,7 +76,7 @@ Response:
 ### List all flags
 
 ```text
-GET /flags
+GET /listflag
 ```
 
 Response:

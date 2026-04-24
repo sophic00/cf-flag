@@ -8,6 +8,7 @@ import (
 )
 
 var countryCodePattern = regexp.MustCompile(`^[A-Z]{2}$`)
+var emailPattern = regexp.MustCompile(`^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$`)
 var errIDGeneration = errors.New("id generation failed")
 
 func normalizeUserInput(in createUserRequest) (UserRecord, error) {
@@ -21,7 +22,7 @@ func normalizeUserInput(in createUserRequest) (UserRecord, error) {
 	if email == "" {
 		return UserRecord{}, errors.New("email is required")
 	}
-	if !strings.Contains(email, "@") {
+	if !emailPattern.MatchString(email) {
 		return UserRecord{}, errors.New("email is invalid")
 	}
 	if !isCountryCode(country) {
@@ -65,14 +66,14 @@ func normalizeFlagInput(in createFlagRequest) (FlagRecord, error) {
 			return FlagRecord{}, errors.New("country must be an ISO-2 code")
 		}
 		flag.Rule = "country:" + country
-		return flag, nil
+	} else {
+		pct := *in.Percentage
+		if pct < 0 || pct > 100 {
+			return FlagRecord{}, errors.New("percentage must be in range 0..100")
+		}
+		flag.Rule = fmt.Sprintf("pct:%d", pct)
 	}
 
-	pct := *in.Percentage
-	if pct < 0 || pct > 100 {
-		return FlagRecord{}, errors.New("percentage must be in range 0..100")
-	}
-	flag.Rule = fmt.Sprintf("pct:%d", pct)
 	return flag, nil
 }
 

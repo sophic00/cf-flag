@@ -9,9 +9,9 @@ import (
 
 func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /healthz", s.handleHealth)
-	mux.HandleFunc("POST /users", s.handleCreateUser)
-	mux.HandleFunc("POST /flags", s.handleCreateFlag)
-	mux.HandleFunc("GET /flags", s.handleListFlags)
+	mux.HandleFunc("POST /createuser", s.handleCreateUser)
+	mux.HandleFunc("POST /createflag", s.handleCreateFlag)
+	mux.HandleFunc("GET /listflag", s.handleListFlags)
 	mux.HandleFunc("GET /flags/{flagID}/users/{userID}/active", s.handleFlagActive)
 }
 

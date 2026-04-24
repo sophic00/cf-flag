@@ -15,16 +15,16 @@ func ParseFlagRule(raw string) (FlagRule, error) {
 		return FlagRule{}, errors.New("rule is empty")
 	}
 
-	if strings.HasPrefix(raw, "country:") {
-		country := strings.ToUpper(strings.TrimSpace(strings.TrimPrefix(raw, "country:")))
+	if after, ok := strings.CutPrefix(raw, "country:"); ok {
+		country := strings.ToUpper(strings.TrimSpace(after))
 		if !isCountryCode(country) {
 			return FlagRule{}, errors.New("invalid country rule")
 		}
 		return FlagRule{TypeName: RuleTypeCountry, Country: country}, nil
 	}
 
-	if strings.HasPrefix(raw, "pct:") {
-		pctText := strings.TrimSpace(strings.TrimPrefix(raw, "pct:"))
+	if after, ok := strings.CutPrefix(raw, "pct:"); ok {
+		pctText := strings.TrimSpace(after)
 		pct, err := strconv.Atoi(pctText)
 		if err != nil {
 			return FlagRule{}, errors.New("invalid percentage rule")
