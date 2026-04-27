@@ -95,12 +95,25 @@ pct_flag_payload="$(jq -nc \
 pct_flag_response="$(post_json '/createflag' "$pct_flag_payload")"
 pct_flag_id="$(jq -r '.flag.id' <<<"$pct_flag_response")"
 
-printf 'Verifying /listflag contains both created flags\n'
+country_pct_flag_name="country-pct-${COUNTRY_CODE}-${PERCENTAGE}-${run_id}"
+
+printf 'Creating country+percentage flag %s\n' "$country_pct_flag_name"
+country_pct_flag_payload="$(jq -nc \
+  --arg name "$country_pct_flag_name" \
+  --arg country "$COUNTRY_CODE" \
+  --argjson percentage "$PERCENTAGE" \
+  '{name:$name, country:$country, percentage:$percentage}')"
+country_pct_flag_response="$(post_json '/createflag' "$country_pct_flag_payload")"
+country_pct_flag_id="$(jq -r '.flag.id' <<<"$country_pct_flag_response")"
+
+printf 'Verifying /listflag contains created flags\n'
 flags_response="$(get_json '/listflag')"
 country_found="$(jq -r --arg id "$country_flag_id" '[.flags[] | select(.id == $id)] | length' <<<"$flags_response")"
 pct_found="$(jq -r --arg id "$pct_flag_id" '[.flags[] | select(.id == $id)] | length' <<<"$flags_response")"
+country_pct_found="$(jq -r --arg id "$country_pct_flag_id" '[.flags[] | select(.id == $id)] | length' <<<"$flags_response")"
 assert_eq '1' "$country_found" 'country flag listed'
 assert_eq '1' "$pct_found" 'percentage flag listed'
+assert_eq '1' "$country_pct_found" 'country+percentage flag listed'
 
 printf 'Checking country rule across %d users\n' "$TOTAL_USERS"
 country_active_count=0
@@ -176,6 +189,46 @@ if (( pct_active_count < min_pct_count || pct_active_count > max_pct_count )); t
   exit 1
 fi
 
+printf 'Checking country+percentage rule across %d users\n' "$TOTAL_USERS"
+country_pct_active_count=0
+for ((idx = 0; idx < TOTAL_USERS; idx++)); do
+  user_id="${user_ids[$idx]}"
+  country="${user_countries[$idx]}"
+  payload="$(jq -nc \
+    --arg flagId "$country_pct_flag_id" \
+    --arg userId "$user_id" \
+    --arg userCountry "$country" \
+    '{flagId:$flagId, userId:$userId, userCountry:$userCountry}')"
+  response="$(post_json '/checkflag' "$payload")"
+  active="$(jq -r '.active' <<<"$response")"
+
+  if [[ "$country" != "$COUNTRY_CODE" ]]; then
+    assert_eq "false" "$active" "country+pct flag should be false for non-matching country ${country}"
+  elif [[ "$active" == 'true' ]]; then
+    ((country_pct_active_count += 1))
+  fi
+
+  if (((idx + 1) % 25 == 0)); then
+    printf '  checked %d/%d country+percentage evaluations\n' "$((idx + 1))" "$TOTAL_USERS"
+  fi
+done
+
+expected_country_pct_count=$(( expected_country_matches * PERCENTAGE / 100 ))
+min_country_pct_count=$(( expected_country_pct_count - tolerance ))
+max_country_pct_count=$(( expected_country_pct_count + tolerance ))
+if (( min_country_pct_count < 0 )); then
+  min_country_pct_count=0
+fi
+if (( max_country_pct_count > expected_country_matches )); then
+  max_country_pct_count=$expected_country_matches
+fi
+
+if (( country_pct_active_count < min_country_pct_count || country_pct_active_count > max_country_pct_count )); then
+  printf 'country+percentage rollout out of expected range: active=%d expected=%d range=[%d,%d]\n' \
+    "$country_pct_active_count" "$expected_country_pct_count" "$min_country_pct_count" "$max_country_pct_count" >&2
+  exit 1
+fi
+
 printf '\nSmoke test passed\n'
 printf '  users created: %d\n' "$TOTAL_USERS"
 printf '  country flag id: %s\n' "$country_flag_id"
@@ -183,3 +236,6 @@ printf '  percentage flag id: %s\n' "$pct_flag_id"
 printf '  country matches: %d\n' "$country_active_count"
 printf '  percentage actives: %d (expected %d, range [%d,%d])\n' \
   "$pct_active_count" "$expected_pct_count" "$min_pct_count" "$max_pct_count"
+printf '  country+percentage flag id: %s\n' "$country_pct_flag_id"
+printf '  country+percentage actives: %d (expected %d, range [%d,%d])\n' \
+  "$country_pct_active_count" "$expected_country_pct_count" "$min_country_pct_count" "$max_country_pct_count"
