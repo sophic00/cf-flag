@@ -1,19 +1,15 @@
 package flagapi
 
-type createUserRequest struct {
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	Country string `json:"country"`
+type checkFlagRequest struct {
+	FlagID      string `json:"flagId"`
+	UserID      string `json:"userId"`
+	UserCountry string `json:"userCountry"`
 }
 
 type createFlagRequest struct {
 	Name       string  `json:"name"`
 	Country    *string `json:"country,omitempty"`
 	Percentage *int    `json:"percentage,omitempty"`
-}
-
-type createUserResponse struct {
-	User UserRecord `json:"user"`
 }
 
 type createFlagResponse struct {
@@ -33,13 +29,6 @@ type flagStatusResponse struct {
 
 type errorResponse struct {
 	Error string `json:"error"`
-}
-
-type UserRecord struct {
-	ID      string `json:"id"`
-	Name    string `json:"name"`
-	Email   string `json:"email"`
-	Country string `json:"country"`
 }
 
 type FlagRecord struct {

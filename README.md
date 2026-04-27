@@ -6,9 +6,8 @@ Design details are documented in `docs/design.md`.
 
 ## What it supports
 
-- Create user (`name`, `email`, `country`) with backend-generated `id`.
-- Create flag (`name`, rule as country or percentage) with backend-generated `id`.
-- Check if flag is active for a user.
+- Create flag (`name`, rule as country, percentage, or country_percentage) with backend-generated `id`.
+- Check if flag is active for a user, passing in user context (ID, country).
 
 Rules are stored as:
 
@@ -21,22 +20,10 @@ User and flag IDs are generated as UUIDv7 (`usr_<uuidv7>`, `flg_<uuidv7>`), whic
 
 ## Endpoints
 
-- `POST /createuser`
 - `POST /createflag`
 - `GET /listflag`
-- `GET /flags/{flagID}/users/{userID}/active`
+- `POST /checkflag`
 - `GET /healthz`
-
-### Create user
-
-```json
-POST /createuser
-{
-  "name": "Vaibhav",
-  "email": "vaibhav@example.com",
-  "country": "IN"
-}
-```
 
 ### Create country flag
 
@@ -60,8 +47,13 @@ POST /createflag
 
 ### Check active
 
-```text
-GET /flags/flg_<generated-id>/users/usr_<generated-id>/active
+```json
+POST /checkflag
+{
+  "flagId": "flg_<generated-id>",
+  "userId": "usr_<user-id>",
+  "userCountry": "IN"
+}
 ```
 
 Response:

@@ -7,25 +7,18 @@
 The system is intentionally simple:
 
 - One Cloudflare Worker handles all API routes.
-- One Cloudflare D1 database stores users and flags.
+- One Cloudflare D1 database stores flags.
 - Percentage-based flag assignment is computed on demand and is not persisted.
 
 ## Goals
 
 - Keep the data model small.
-- Support country-based rules and percentage-based rules.
+- Support country-based rules, percentage-based rules, and their combination.
 - Avoid a `flag_user` mapping table.
 - Make percentage assignment deterministic and stable.
 - Keep the deployment model simple for Cloudflare Workers.
 
 ## Data Model
-
-### `users`
-
-- `id TEXT PRIMARY KEY`
-- `name TEXT NOT NULL`
-- `email TEXT NOT NULL UNIQUE`
-- `country TEXT NOT NULL`
 
 ### `flags`
 
@@ -37,20 +30,20 @@ The `rule` column is encoded as one of:
 
 - `country:IN`
 - `pct:25`
+- `country_pct:IN:25`
 
 ## API
 
-- `POST /createuser`
 - `POST /createflag`
 - `GET /listflag`
-- `GET /flags/{flagID}/users/{userID}/active`
+- `POST /checkflag`
 - `GET /healthz`
 
 ## Rule Evaluation
 
 ### Country Rule
 
-For `country:XX`, the Worker loads the user by `userID` and compares `users.country` with the flag country.
+For `country:XX`, the Worker compares the `userCountry` provided in the request with the flag country.
 
 ### Percentage Rule
 
@@ -73,6 +66,10 @@ This provides:
 - stable rollouts over time
 - no stored assignment table
 - approximately uniform spread for percentage flags
+
+### Country Percentage Rule
+
+For `country_pct:XX:N`, the Worker first evaluates the country match. If the `userCountry` provided in the request matches `XX`, it then evaluates the percentage assignment (`N`) exactly as described in the Percentage Rule section.
 
 ### Percentage Mapping Alternatives
 

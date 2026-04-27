@@ -10,45 +10,15 @@ import (
 func (s *Server) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /", s.handleHealth)
 	mux.HandleFunc("GET /healthz", s.handleHealth)
-	mux.HandleFunc("POST /createuser", s.handleCreateUser)
 	mux.HandleFunc("POST /createflag", s.handleCreateFlag)
 	mux.HandleFunc("GET /listflag", s.handleListFlags)
-	mux.HandleFunc("GET /flags/{flagID}/users/{userID}/active", s.handleFlagActive)
+	mux.HandleFunc("POST /checkflag", s.handleCheckFlag)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"ok": true})
 }
 
-func (s *Server) handleCreateUser(w http.ResponseWriter, req *http.Request) {
-	var in createUserRequest
-	if err := decodeJSON(req.Body, &in); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-
-	user, err := normalizeUserInput(in)
-	if err != nil {
-		if errors.Is(err, errIDGeneration) {
-			writeError(w, http.StatusInternalServerError, "failed to generate user id")
-			return
-		}
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	err = s.insertUser(req.Context(), user)
-	if err != nil {
-		if isUniqueConstraintError(err) {
-			writeError(w, http.StatusConflict, "user already exists")
-			return
-		}
-		writeError(w, http.StatusInternalServerError, "failed to create user")
-		return
-	}
-
-	writeJSON(w, http.StatusCreated, createUserResponse{User: user})
-}
 
 func (s *Server) handleCreateFlag(w http.ResponseWriter, req *http.Request) {
 	var in createFlagRequest
@@ -90,13 +60,20 @@ func (s *Server) handleListFlags(w http.ResponseWriter, req *http.Request) {
 	writeJSON(w, http.StatusOK, listFlagsResponse{Flags: flags})
 }
 
-func (s *Server) handleFlagActive(w http.ResponseWriter, req *http.Request) {
-	flagID := strings.TrimSpace(req.PathValue("flagID"))
-	userID := strings.TrimSpace(req.PathValue("userID"))
-	if flagID == "" || userID == "" {
-		writeError(w, http.StatusBadRequest, "flagID and userID are required")
+func (s *Server) handleCheckFlag(w http.ResponseWriter, req *http.Request) {
+	var in checkFlagRequest
+	if err := decodeJSON(req.Body, &in); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+
+	flagID := strings.TrimSpace(in.FlagID)
+	userID := strings.TrimSpace(in.UserID)
+	if flagID == "" || userID == "" {
+		writeError(w, http.StatusBadRequest, "flagId and userId are required")
+		return
+	}
+	userCountry := strings.ToUpper(strings.TrimSpace(in.UserCountry))
 
 	ctx := req.Context()
 	rawRule, err := s.getFlagRule(ctx, flagID)
@@ -106,16 +83,6 @@ func (s *Server) handleFlagActive(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "failed to load flag")
-		return
-	}
-
-	userCountry, err := s.getUserCountry(ctx, userID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			writeError(w, http.StatusNotFound, "user not found")
-			return
-		}
-		writeError(w, http.StatusInternalServerError, "failed to load user")
 		return
 	}
 

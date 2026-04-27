@@ -64,7 +64,7 @@ expected_country_matches="$split_index"
 declare -a user_ids
 declare -a user_countries
 
-printf 'Creating %d users\n' "$TOTAL_USERS"
+printf 'Generating %d users locally\n' "$TOTAL_USERS"
 for ((i = 1; i <= TOTAL_USERS; i++)); do
   if (( i <= split_index )); then
     country="$COUNTRY_CODE"
@@ -72,19 +72,8 @@ for ((i = 1; i <= TOTAL_USERS; i++)); do
     country="$OTHER_COUNTRY"
   fi
 
-  payload="$(jq -nc \
-    --arg name "Load User ${i}" \
-    --arg email "cf-flag-${run_id}-${i}@example.com" \
-    --arg country "$country" \
-    '{name:$name, email:$email, country:$country}')"
-
-  response="$(post_json '/createuser' "$payload")"
-  user_ids+=("$(jq -r '.user.id' <<<"$response")")
+  user_ids+=("usr_test_${run_id}_${i}")
   user_countries+=("$country")
-
-  if (( i % 25 == 0 )); then
-    printf '  created %d/%d users\n' "$i" "$TOTAL_USERS"
-  fi
 done
 
 country_flag_name="country-${COUNTRY_CODE}-${run_id}"
@@ -118,7 +107,12 @@ country_active_count=0
 for ((idx = 0; idx < TOTAL_USERS; idx++)); do
   user_id="${user_ids[$idx]}"
   country="${user_countries[$idx]}"
-  response="$(get_json "/flags/${country_flag_id}/users/${user_id}/active")"
+  payload="$(jq -nc \
+    --arg flagId "$country_flag_id" \
+    --arg userId "$user_id" \
+    --arg userCountry "$country" \
+    '{flagId:$flagId, userId:$userId, userCountry:$userCountry}')"
+  response="$(post_json '/checkflag' "$payload")"
   active="$(jq -r '.active' <<<"$response")"
 
   expected='false'
@@ -139,14 +133,20 @@ printf 'Checking percentage rule across %d users\n' "$TOTAL_USERS"
 pct_active_count=0
 for ((idx = 0; idx < TOTAL_USERS; idx++)); do
   user_id="${user_ids[$idx]}"
-  response="$(get_json "/flags/${pct_flag_id}/users/${user_id}/active")"
+  country="${user_countries[$idx]}"
+  payload="$(jq -nc \
+    --arg flagId "$pct_flag_id" \
+    --arg userId "$user_id" \
+    --arg userCountry "$country" \
+    '{flagId:$flagId, userId:$userId, userCountry:$userCountry}')"
+  response="$(post_json '/checkflag' "$payload")"
   active="$(jq -r '.active' <<<"$response")"
   if [[ "$active" == 'true' ]]; then
     ((pct_active_count += 1))
   fi
 
   if (( idx < 10 )); then
-    repeat_response="$(get_json "/flags/${pct_flag_id}/users/${user_id}/active")"
+    repeat_response="$(post_json '/checkflag' "$payload")"
     repeat_active="$(jq -r '.active' <<<"$repeat_response")"
     assert_eq "$active" "$repeat_active" "deterministic percentage flag for ${user_id}"
   fi
